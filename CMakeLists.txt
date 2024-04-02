@@ -5,6 +5,7 @@ SET(CMAKE_SYSTEM_PROCESSOR cortex-m3)
 #SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# 解决编译warning
 add_definitions(-D__RT_KERNEL_SOURCE__)
 SET(CMAKE_C_COMPILER "D:/env/env-windows-1.5.0/tools/bin/../../tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gcc.exe")
 SET(CMAKE_ASM_COMPILER "D:/env/env-windows-1.5.0/tools/bin/../../tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gcc.exe")

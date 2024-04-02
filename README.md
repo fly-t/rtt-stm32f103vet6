@@ -2,7 +2,7 @@
 
 ## 简介
 
-本文档为 xxx 开发板的 BSP (板级支持包) 说明。
+本文档为 stm32F103vet6 野火 开发板的 BSP (板级支持包) 说明。
 
 主要内容如下：
 
@@ -22,16 +22,16 @@
 
 该开发板常用 **板载资源** 如下：
 
-- MCU：STM32xxx，主频 xxxMHz，xxxKB FLASH ，xxxKB RAM
+- MCU：STM32F103VET6，主频 72MHz，256KB FLASH ，64KB RAM
 - 外部 RAM：型号，xMB
-- 外部 FLASH：型号，xMB
+- 外部 FLASH：型号，0MB
 - 常用外设
-  - LED：x个，DS0（红色，PB1），DS1（绿色，PB0）
-  - 按键：x个，K0（兼具唤醒功能，PA0），K1（PC13）
+  - LED：3个，LED_G（PB0），LED_B（PB1），LED_R（PB5）
+  - 按键：1个，KEY1（PA0），KEY2（PC13）
 - 常用接口：USB 转串口、SD 卡接口、以太网接口、LCD 接口等
 - 调试接口，标准 JTAG/SWD
 
-开发板更多详细信息请参考【厂商名】 [xxx开发板介绍](https://xxx)。
+开发板更多详细信息请参考【厂商名】 [野火指南者开发板介绍](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/ebf_stm32f103_zhinanzhe/download/stm32f103_zhinanzhe.html)。
 
 ## 外设支持
 
@@ -111,6 +111,17 @@ msh >
 4. 输入`scons --target=mdk4/mdk5/iar` 命令重新生成工程。
 
 本章节更多详细的介绍请参考 [STM32 系列 BSP 外设驱动使用教程](../docs/STM32系列BSP外设驱动使用教程.md)。
+
+
+# CLion环境配置
+
+参考 [官方clion教程](https://club.rt-thread.org/ask/article/d340af7e3230e205.html)
+编译环境时会出出现warning很多, 解决方案(添加编译宏)
+
+cmakeLists.txt
+```cmake
+add_definitions(-D__RT_KERNEL_SOURCE__)
+```
 
 ## 注意事项
 
