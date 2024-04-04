@@ -15,12 +15,13 @@
 /* defined the LED0 pin: PB1 */
 #define LED0_PIN    GET_PIN(B, 1)
 
+static rt_sem_t sem_demo = RT_NULL;
 
-
+int i=0;
 /* 线程 1 入口 */
 void thread1_entry(void* parameter)
 {
-    int i=0;
+
 
     while (1)
     {
@@ -28,32 +29,33 @@ void thread1_entry(void* parameter)
         rt_kprintf("thread-1:%d\n", i);
 
         /* 延时 100ms */
-//        rt_thread_mdelay(1000);
-        if (i>200){
-            return;
-        }
+        rt_thread_mdelay(1000);
+        rt_sem_release(sem_demo);
     }
 }
 
 /* 线程 2 入口 */
 void thread2_entry(void* parameter)
 {
-    int i=0;
+
 
     while (1)
     {
-        i+=1;
-        rt_kprintf("thread--2:%d\n", i);
-
-        /* 延时 100ms */
-//        rt_thread_mdelay(1000);
-        if (i>200){
-            return;
+        if(rt_sem_take(sem_demo,RT_WAITING_FOREVER)==RT_EOK){
+            i+=1;
+            rt_kprintf("thread--2:%d\n", i);
+            /* 延时 100ms */
+//            rt_thread_mdelay(1000);
         }
+
     }
 }
 int main(void)
 {
+    /* value 0 means only one source */
+    sem_demo = rt_sem_create("dsem", 0, RT_IPC_FLAG_PRIO);
+
+
     rt_thread_t thread2_ptr;
     rt_thread_t thread1_ptr;
     thread1_ptr = rt_thread_create("thread1",
@@ -73,6 +75,9 @@ int main(void)
     int count = 1;
     /* set LED0 pin mode to output */
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
+
+
+
 
     while (count++)
     {
