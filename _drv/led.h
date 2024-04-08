@@ -5,8 +5,8 @@
 #ifndef RTTHREAD_LED_H
 #define RTTHREAD_LED_H
 
-#define LEDG_PIN    GET_PIN(B, 1)
-#define LEDB_PIN    GET_PIN(B, 2)
+#define LEDG_PIN    GET_PIN(B, 0)
+#define LEDB_PIN    GET_PIN(B, 1)
 #define LEDR_PIN    GET_PIN(B, 5)
 
 #include "board.h"

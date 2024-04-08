@@ -13,27 +13,35 @@ rt_err_t  led_init(rt_device_t dev){
     rt_pin_write(LEDR_PIN,PIN_HIGH);
     rt_pin_write(LEDG_PIN,PIN_HIGH);
     rt_pin_write(LEDB_PIN,PIN_HIGH);
-    rt_kprintf("led init\n");
-    return 0;
+    return RT_EOK;
 }
+
 rt_err_t  led_open(rt_device_t dev, rt_uint16_t oflag){
-    rt_kprintf("led open\n");
-    return 0;
+    /* open device */
+    if(oflag ==RT_DEVICE_OFLAG_OPEN  ){
+        dev->open_flag = 1;
+        rt_kprintf("led open\n");
+        return 0;
+    }
+    return -1;
 }
+
 rt_err_t  led_close(rt_device_t dev){
+    /* close device */
+    dev->open_flag = 0;
     rt_kprintf("led close\n");
-    return 0;
+    return RT_EOK;
 }
 
 rt_ssize_t led_read(rt_device_t dev, rt_off_t pos, void *buffer, rt_size_t size){
-    return 0;
+    return RT_EOK;
 }
 
 
 rt_ssize_t led_write(rt_device_t dev, rt_off_t pos, const void *buffer, rt_size_t size){
-    rt_kprintf("led led_write\n");
-
-    return 0;
+    rt_led_rgb_t ledRgb = *(rt_led_rgb_t*)buffer;
+    rt_pin_write(ledRgb.pin,ledRgb.status);
+    return RT_EOK;
 }
 
 

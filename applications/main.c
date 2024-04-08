@@ -27,11 +27,11 @@ int main(void)
 
     /* call the bsp function */
     rt_device_init(led_rgb);
-    rt_device_open(led_rgb,RT_DEVICE_FLAG_RDWR);
+    rt_device_open(led_rgb,RT_DEVICE_OFLAG_OPEN);
+    rt_led_rgb_t ledStat;
+    ledStat.pin = LEDB_PIN;
+    ledStat.status = PIN_LOW;
+    rt_device_write(led_rgb,RT_NULL,(void*)&ledStat, sizeof(ledStat));
 
-//    rt_led_rgb_t led_demo;
-//    led_demo.pin = GET_PIN(B,1);
-//    led_demo.status = PIN_LOW;
-//    rt_device_write(led_rgb,RT_NULL,(void*)&led_demo,sizeof(led_demo));
     return RT_EOK;
 }
