@@ -132,3 +132,11 @@ add_definitions(-D__RT_KERNEL_SOURCE__)
 维护人:
 
 -  [xxx](https://个人主页), 邮箱：<xxx@xxx.com>
+
+
+## 尝试编写led 的Device类
+
+led注意点: 
+> 该函数设置完成后pin脚默认是低电平, 初始化完成之后需要设置为默认的状态.
+1. rt_pin_mode(LEDR_PIN, PIN_MODE_OUTPUT);
+
