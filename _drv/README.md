@@ -51,3 +51,30 @@ int main(void)
 
 ## button bsp driver
 
+通过软件定时器进行检测按键是否按下.
+
+> 需要注意
+
+```c
+# 官方实现 有问题
+#define KEY_PIN          1
+#define KEY_PRESS_VALUE  0
+```
+将上述地方修改为
+
+```c
+#define KEY1_PIN          GET_PIN(A,0)
+```
+将结构体修改为
+
+```c
+typedef struct bsp_button{
+    rt_uint8_t  press_logic_level;  /* 按键按下时被检测到的电平(目标检测电平): 0->low  1->high */
+    rt_uint16_t cnt;                /* 连续扫描到按下状态的次数 */
+    rt_uint16_t hold_cyc_period;    /* 长按周期回调的周期 */
+    rt_base_t pin;                  /* 按键对应的 pin 编号 */
+
+    enum bsp_button_event event;    /* 按键的触发的事件 */
+    void  (*cb)(void* arg );/* 按键触发事件回调函数 */
+}bsp_button_t;
+```
