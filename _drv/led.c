@@ -34,6 +34,9 @@ rt_err_t  led_close(rt_device_t dev){
 }
 
 rt_ssize_t led_read(rt_device_t dev, rt_off_t pos, void *buffer, rt_size_t size){
+    rt_led_rgb_t ledRgb = *(rt_led_rgb_t*)buffer;
+    ledRgb.status = rt_pin_read(ledRgb.pin);
+    (*(rt_led_rgb_t*)buffer).status = ledRgb.status;
     return RT_EOK;
 }
 

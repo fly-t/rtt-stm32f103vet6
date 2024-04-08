@@ -1,3 +1,8 @@
+# led bsp driver demo
+
+`main.c`
+
+``` c
 /*
  * Copyright (c) 2006-2018, RT-Thread Development Team
  *
@@ -29,13 +34,11 @@ int main(void)
     rt_device_open(led_rgb,RT_DEVICE_OFLAG_OPEN);
     rt_device_init(led_rgb);
 
-    /* write RGB */
     rt_led_rgb_t ledStat;
     ledStat.pin = LEDB_PIN;
     ledStat.status = PIN_LOW;
     rt_device_write(led_rgb,RT_NULL,(void*)&ledStat, sizeof(ledStat));
 
-    /* read RGB */
     rt_led_rgb_t ledStat2;
     ledStat2.pin = LEDB_PIN;
     rt_device_read(led_rgb,RT_NULL,(void*)&ledStat2,sizeof(ledStat));
@@ -43,3 +46,5 @@ int main(void)
     rt_kprintf("led B: %d\n",ledStat2.status);
     return RT_EOK;
 }
+
+```
