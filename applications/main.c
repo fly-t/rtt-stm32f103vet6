@@ -11,35 +11,71 @@
 #include <rtthread.h>
 #include <board.h>
 #include "led.h"
+#include "button.h"
 
-/* defined the LED0 pin: PB1 */
+
+#define KEY1_PIN          GET_PIN(A,0)
+#define KEY2_PIN          GET_PIN(C,13)
+#define KEY_PRESS_VALUE  1
+
+rt_device_t  led_rgb;
 
 
+void key_cb(bsp_button_t *button)
+{
+    switch (button->event)
+    {
+        case BUTTON_EVENT_CLICK_UP:
+            rt_pin_mode(LEDR_PIN,PIN_MODE_OUTPUT);
+            rt_pin_write(LEDR_PIN,PIN_LOW);
+            rt_kprintf("This is click up callback!\n");
+            break;
+        case BUTTON_EVENT_HOLD_CYC:
+            rt_kprintf("This is hold cyc callback!\n");
+            break;
+        default:
+            ;
+    }
+}
+void key2_cb(bsp_button_t *button)
+{
+    switch (button->event)
+    {
+        case BUTTON_EVENT_CLICK_UP:
+            rt_pin_mode(LEDR_PIN,PIN_MODE_OUTPUT);
+            rt_pin_write(LEDR_PIN,PIN_HIGH);
+            rt_kprintf("key2: This is click up callback!\n");
+            break;
+        case BUTTON_EVENT_HOLD_CYC:
+            rt_kprintf("key2: This is hold cyc callback!\n");
+            break;
+        default:
+            ;
+    }
+}
 int main(void)
 {
-    rt_device_t led_rgb = RT_NULL;
 
-    led_rgb = rt_device_find("rgb");
-    if(led_rgb==RT_NULL){
-        rt_kprintf("device led-rgb not find\n");
-        return RT_ERROR;
+    /* user app entry */
+    bsp_button_t key = {0};
+    bsp_button_t key2 = {0};
+
+    key.press_logic_level = KEY_PRESS_VALUE;
+    key.hold_cyc_period = 100;
+    key.cb = (void*)key_cb;
+    key.pin = KEY1_PIN;
+
+    key2.press_logic_level = KEY_PRESS_VALUE;
+    key2.hold_cyc_period = 100;
+    key2.cb = (void *)key2_cb;
+    key2.pin = KEY2_PIN;
+
+    bsp_button_register(&key);
+    bsp_button_register(&key2);
+
+    bsp_button_start();
+    while (1){
+        rt_thread_mdelay(10);
     }
-
-    /* call the bsp function */
-    rt_device_open(led_rgb,RT_DEVICE_OFLAG_OPEN);
-    rt_device_init(led_rgb);
-
-    /* write RGB */
-    rt_led_rgb_t ledStat;
-    ledStat.pin = LEDB_PIN;
-    ledStat.status = PIN_LOW;
-    rt_device_write(led_rgb,RT_NULL,(void*)&ledStat, sizeof(ledStat));
-
-    /* read RGB */
-    rt_led_rgb_t ledStat2;
-    ledStat2.pin = LEDB_PIN;
-    rt_device_read(led_rgb,RT_NULL,(void*)&ledStat2,sizeof(ledStat));
-
-    rt_kprintf("led B: %d\n",ledStat2.status);
     return RT_EOK;
 }
