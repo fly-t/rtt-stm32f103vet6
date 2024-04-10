@@ -96,6 +96,7 @@
 #define RT_SERIAL_USING_DMA
 #define RT_SERIAL_RB_BUFSZ 64
 #define RT_USING_PWM
+#define RT_USING_RTC
 #define RT_USING_PIN
 
 /* Using USB */
@@ -115,12 +116,15 @@
 /* POSIX (Portable Operating System Interface) layer */
 
 #define RT_USING_POSIX_FS
+#define RT_USING_POSIX_DEVIO
 #define RT_USING_POSIX_POLL
 #define RT_USING_POSIX_SELECT
 #define RT_USING_POSIX_SOCKET
 
 /* Interprocess Communication (IPC) */
 
+#define RT_USING_POSIX_PIPE
+#define RT_USING_POSIX_PIPE_SIZE 512
 
 /* Socket is in the 'Network' category */
 
@@ -128,23 +132,16 @@
 /* Network */
 
 #define RT_USING_SAL
-#define SAL_INTERNET_CHECK
 
 /* Docking with protocol stacks */
 
-#define SAL_USING_AT
 #define SAL_USING_POSIX
 #define RT_USING_NETDEV
-#define NETDEV_USING_IFCONFIG
-#define NETDEV_USING_PING
-#define NETDEV_USING_NETSTAT
-#define NETDEV_USING_AUTO_DEFAULT
 #define NETDEV_IPV4 1
 #define NETDEV_IPV6 0
 #define RT_USING_AT
 #define AT_USING_CLIENT
 #define AT_CLIENT_NUM_MAX 1
-#define AT_USING_SOCKET
 #define AT_USING_CLI
 #define AT_SW_VERSION_NUM 0x10301
 
@@ -153,6 +150,7 @@
 
 /* Utilities */
 
+#define RT_USING_RESOURCE_ID
 
 /* RT-Thread online packages */
 
@@ -175,22 +173,20 @@
 
 /* CYW43439 WiFi */
 
-#define PKG_USING_AT_DEVICE
-#define AT_DEVICE_USING_BC26
-#define AT_DEVICE_BC26_SOCKET
-#define AT_DEVICE_BC26_SAMPLE
-#define BC26_SAMPLE_POWER_PIN -1
-#define BC26_SAMPLE_STATUS_PIN -1
-#define BC26_SAMPLE_CLIENT_NAME "uart2"
-#define BC26_SAMPLE_RECV_BUFF_LEN 512
-#define PKG_USING_AT_DEVICE_LATEST_VERSION
-#define PKG_AT_DEVICE_VER_NUM 0x99999
 
 /* IoT Cloud */
 
 
 /* security packages */
 
+#define PKG_USING_MBEDTLS
+
+/* Select Root Certificate */
+
+#define MBEDTLS_AES_ROM_TABLES
+#define MBEDTLS_ECP_WINDOW_SIZE 2
+#define MBEDTLS_SSL_MAX_CONTENT_LEN 3584
+#define PKG_USING_MBEDTLS_V2281
 
 /* language packages */
 

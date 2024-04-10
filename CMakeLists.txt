@@ -27,9 +27,6 @@ INCLUDE_DIRECTORIES(
 	_drv
 	applications
 	rt-thread/components/net/at/include
-	rt-thread/components/net/at/at_socket
-	packages/at_device-latest/inc
-	packages/at_device-latest/class/bc26
 	packages/cJSON-v1.7.17
 	rt-thread/components/libc/compilers/common/include
 	rt-thread/components/libc/compilers/newlib
@@ -56,9 +53,9 @@ INCLUDE_DIRECTORIES(
 	rt-thread/components/net/netdev/include
 	rt-thread/components/net/sal/include
 	rt-thread/components/net/sal/include/socket
-	rt-thread/components/net/sal/impl
 	rt-thread/components/net/sal/include/dfs_net
 	rt-thread/components/net/sal/include/socket/sys_socket
+	rt-thread/components/utilities/resource
 )
 
 ADD_DEFINITIONS(
@@ -71,21 +68,17 @@ ADD_DEFINITIONS(
 )
 
 SET(PROJECT_SOURCES
-	_drv/button.c
 	_drv/led.c
-	_drv/decode.c
 	_drv/beep.c
+	_drv/decode.c
+	_drv/button.c
+	_drv/bc260y.c
 	applications/main.c
 	rt-thread/components/net/at/src/at_cli.c
-	rt-thread/components/net/at/src/at_utils.c
-	rt-thread/components/net/at/at_socket/at_socket.c
 	rt-thread/components/net/at/src/at_client.c
-	packages/at_device-latest/class/bc26/at_socket_bc26.c
-	packages/at_device-latest/class/bc26/at_device_bc26.c
-	packages/at_device-latest/samples/at_sample_bc26.c
-	packages/at_device-latest/src/at_device.c
-	packages/cJSON-v1.7.17/cJSON_Utils.c
+	rt-thread/components/net/at/src/at_utils.c
 	packages/cJSON-v1.7.17/cJSON.c
+	packages/cJSON-v1.7.17/cJSON_Utils.c
 	rt-thread/components/libc/compilers/common/cctype.c
 	rt-thread/components/libc/compilers/common/cstdlib.c
 	rt-thread/components/libc/compilers/common/cstring.c
@@ -104,6 +97,7 @@ SET(PROJECT_SOURCES
 	rt-thread/components/drivers/ipc/workqueue.c
 	rt-thread/components/drivers/misc/rt_drv_pwm.c
 	rt-thread/components/drivers/pin/pin.c
+	rt-thread/components/drivers/rtc/rtc.c
 	rt-thread/components/drivers/serial/serial.c
 	board/CubeMX_Config/Src/stm32f1xx_hal_msp.c
 	board/board.c
@@ -145,7 +139,9 @@ SET(PROJECT_SOURCES
 	rt-thread/libcpu/arm/cortex-m3/cpuport.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c
+	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rtc_ex.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c
+	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rtc.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c
@@ -163,10 +159,10 @@ SET(PROJECT_SOURCES
 	rt-thread/components/net/netdev/src/netdev.c
 	rt-thread/components/net/netdev/src/netdev_ipaddr.c
 	rt-thread/components/net/sal/dfs_net/dfs_net.c
-	rt-thread/components/net/sal/impl/af_inet_at.c
 	rt-thread/components/net/sal/socket/net_netdb.c
 	rt-thread/components/net/sal/socket/net_sockets.c
 	rt-thread/components/net/sal/src/sal_socket.c
+	rt-thread/components/utilities/resource/resource_id.c
 )
 
 LINK_DIRECTORIES(

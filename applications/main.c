@@ -10,8 +10,7 @@
 #include <rtthread.h>
 #include "rtdevice.h"
 #include <board.h>
-
-#include <at.h>
+#include "bc260y.h"
 
 #define LED_PIN GET_PIN(B,5)
 
@@ -19,8 +18,6 @@ int main(void)
 {
     /* user app entry */
     rt_pin_mode(LED_PIN, PIN_MODE_OUTPUT);
-
-
 
     while (1)
     {
