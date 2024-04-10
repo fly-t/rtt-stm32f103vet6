@@ -78,3 +78,35 @@ typedef struct bsp_button{
     void  (*cb)(void* arg );/* 按键触发事件回调函数 */
 }bsp_button_t;
 ```
+
+## beep driver
+
+`方法 1:` 在`rtconfig.h`中添加pwm宏:
+
+```c
+#define BSP_USING_PWM
+#define BSP_USING_PWM1
+#define BSP_USING_PWM1_CH1
+```
+
+`方法 2:` 在修改`/board/konfig`文件 其中添加pwm:
+> - 添加完之后使用menuconfig多了pwm的选项, 然后勾选
+> - 使用scons 进行项目配置, 后会发现在rtconfig.h中多了方法1中的宏
+> - 编写beep驱动
+
+```c
+menuconfig BSP_USING_PWM
+            bool "Enable PWM"
+            default n
+            select RT_USING_PWM
+            if BSP_USING_PWM
+            menuconfig BSP_USING_PWM1
+                bool "Enable timer1 output PWM"
+                default n
+                if BSP_USING_PWM1
+                    config BSP_USING_PWM1_CH1
+                        bool "Enable PWM1 channel1"
+                        default n
+                endif
+            endif
+```
