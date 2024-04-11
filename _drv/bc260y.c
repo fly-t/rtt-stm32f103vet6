@@ -4,9 +4,14 @@
 
 #include "bc260y.h"
 #include "drv_log.h"
+#include "at.h"
 
 /* 接收信号量 */
 struct rt_semaphore sem_rx;
+
+struct time bc260y_time;
+
+
 
 rt_err_t bc260y_rxcb(rt_device_t dev, rt_size_t size){
     rt_sem_release(&sem_rx);
@@ -80,4 +85,32 @@ int bc26_device_register(){
     return -RT_ERROR;
 }
 
-INIT_APP_EXPORT(bc26_device_register);
+//INIT_APP_EXPORT(bc26_device_register);
+
+
+int bc260y_at_init(){
+    bc260y_init();
+    at_response_t resp = RT_NULL;
+    at_client_init(BC260Y_UART,256,512);
+    resp = at_create_resp(64, 0, 5000);
+
+    at_exec_cmd(resp, "AT+CCLK?");
+    at_resp_parse_line_args_by_kw(resp, "+CCLK:", "+CCLK: \"%d/%d/%d,%d:%d:%d+%d",
+                                  &bc260y_time.year,
+                                  &bc260y_time.month,
+                                  &bc260y_time.day,
+                                  &bc260y_time.hour,
+                                  &bc260y_time.min,
+                                  &bc260y_time.sec,
+                                  &bc260y_time.z);
+
+    rt_kprintf("%d/%.2d/%.2d,%.2d:%.2d:%.2d\n", bc260y_time.year,
+               bc260y_time.month,
+               bc260y_time.day,
+               (bc260y_time.hour+bc260y_time.z)%24,
+               bc260y_time.min,
+               bc260y_time.sec);
+    at_delete_resp(resp);
+    return 0;
+}
+INIT_APP_EXPORT(bc260y_at_init);

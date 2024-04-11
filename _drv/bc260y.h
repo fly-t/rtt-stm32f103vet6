@@ -11,7 +11,15 @@
 #define BC260Y_BAUD BAUD_RATE_9600
 #define testdata  "bc260 baud9600 test\n"
 
-
+struct time{
+    uint16_t year;
+    uint16_t month;
+    uint16_t day;
+    uint16_t hour;
+    uint16_t min;
+    uint16_t sec;
+    uint16_t z;
+};
 
 /* 串口设备句柄 */
 static rt_device_t serial;
