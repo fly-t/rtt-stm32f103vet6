@@ -18,13 +18,13 @@ rt_err_t bc260y_rxcb(rt_device_t dev, rt_size_t size){
     return RT_EOK;
 }
 
-rt_err_t bc260y_init(){
+rt_err_t bc260y_uart_init(){
     struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;  /* 初始化配置参数 */
 
     /* 查找串口设备 */
     serial = rt_device_find(BC260Y_UART);
     if(serial ==RT_NULL){
-        LOG_E("bc260y_init failed...\n");
+        LOG_E("bc260y_uart_init failed...\n");
         return -RT_EINVAL;
     }
     /* 修改串口配置参数 */
@@ -46,7 +46,7 @@ rt_err_t bc260y_init(){
 }
 
 void entry_bc260y(){
-    bc260y_init();
+    bc260y_uart_init();
 
     /* 创建sem然后在回调函数中使用 */
     rt_sem_init(&sem_rx,"rx_sem",0,RT_IPC_FLAG_FIFO);
@@ -89,9 +89,11 @@ int bc26_device_register(){
 
 
 int bc260y_at_init(){
-    bc260y_init();
-    at_response_t resp = RT_NULL;
+    bc260y_uart_init();
+    /* bc260 at client init */
     at_client_init(BC260Y_UART,256,512);
+
+    at_response_t resp = RT_NULL;
     resp = at_create_resp(64, 0, 5000);
 
     at_exec_cmd(resp, "AT+CCLK?");
