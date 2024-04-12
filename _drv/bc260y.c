@@ -131,18 +131,57 @@ rt_err_t bc260y_get_ip(){
 rt_err_t bc260y_mqtt_open(){
     int v1=-1,v2=-1;
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
-    resp = at_create_resp(128, 4, 15000);
+    resp = at_create_resp(64, 4, 15000);
 
     at_exec_cmd(resp, "AT+QMTOPEN=0,\"DN2HGX3J4C.iotcloud.tencentdevices.com\",1883");
 
     at_resp_parse_line_args_by_kw(resp, "+QMTOPEN:", "+QMTOPEN: %d,%d", &v1,&v2);
 
-    rt_kprintf("v1:%d   v2:%d\n", v1,v2);
+    rt_kprintf("open:v1:%d   v2:%d\n", v1,v2);
     at_delete_resp(resp);
     if((v1&&v2)!=0){
         LOG_E("bc260y_mqtt_open failed...\n");
         return -RT_ERROR;
     }
+    return RT_EOK;
+}
+rt_err_t bc260y_mqtt_uart_send(char* data){
+    return rt_device_write(rt_device_find(BC260Y_UART),0,data, rt_strlen(data));
+}
+rt_err_t bc260y_mqtt_connect(){
+    int v1=-1,v2=-1,v3=-1;
+    /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
+    resp = at_create_resp(256, 4, 15000);
+
+    at_exec_cmd(resp, "AT+QMTCONN=0,\"device00\",\"DN2HGX3J4Cdevice00;12010126;28cae;1720627200\",\"225c7c43b439d5365823ff0862becb2ecf84a0fcd648951b47ff0fe488f2af40;hmacsha256\"");
+
+    at_resp_parse_line_args_by_kw(resp, "+QMTCONN:", "+QMTCONN: %d,%d,%d", &v1,&v2,&v3);
+
+    rt_kprintf("connect:v1:%d   v2:%d v3:%d\n", v1,v2,v3);
+    at_delete_resp(resp);
+    if((v1&&v2&&v3)!=0){
+        LOG_E("bc260y_mqtt_connect failed...\n");
+        return -RT_ERROR;
+    }
+    return RT_EOK;
+}
+
+rt_err_t bc260y_rest(){
+    resp = at_create_resp(64, 0, 200);
+    at_exec_cmd(resp, "AT+QRST=1");
+    at_delete_resp(resp);
+    return RT_EOK;
+}
+
+rt_err_t bc260y_mqtt_topic_pub(){
+
+    bc260y_mqtt_uart_send("AT+QMTPUB=0,1,1,0,\"$thing/up/property/DN2HGX3J4C/device00\"\r\n");
+    rt_thread_mdelay(50);
+
+    char* send_data = "{\"method\":\"report\",\"clientToken\":\"bc260y\",\"timestamp\":1681448942,\"params\":{\"lac\":0,\"cid\":0,\"mnc\":0,\"mcc\":0,\"networkType\":1,\"y\":0,\"z\":0,\"x\":0,\"voltage\":3300,\"rsrq\":10,\"temp\":45,\"level\":0}""}\x1a";
+    bc260y_mqtt_uart_send(send_data);
+
+    rt_kprintf("sedn over\n");
     return RT_EOK;
 }
 
@@ -155,10 +194,36 @@ int bc260y_at_init(){
     /* bc260 at client init */
     at_client_init(BC260Y_UART,256,512);
 
-    bc260y_get_time();
-    bc260y_get_ip();
-    rt_thread_mdelay(1000);
-    bc260y_mqtt_open();
     return 0;
 }
 INIT_APP_EXPORT(bc260y_at_init);
+
+void entry_bc260y_mqtt(){
+    bc260y_rest();
+    rt_thread_mdelay(10000);
+    bc260y_get_time();
+    bc260y_get_ip();
+    bc260y_mqtt_open();
+    bc260y_mqtt_connect();
+    bc260y_mqtt_topic_pub();
+    while (1){
+
+    }
+}
+int bc260mqttregister(){
+    static rt_thread_t tid2 = RT_NULL;
+
+    tid2 = rt_thread_create("mqtt",
+                            entry_bc260y_mqtt, RT_NULL,
+                            1024,
+                            25, 10);
+
+/* 如果获得线程控制块，启动这个线程 */
+    if (tid2 != RT_NULL){
+        rt_thread_startup(tid2);
+        return RT_EOK;
+    }
+    return -RT_ERROR;
+}
+
+INIT_APP_EXPORT(bc260mqttregister);
