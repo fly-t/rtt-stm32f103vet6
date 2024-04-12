@@ -28,6 +28,8 @@ static rt_device_t serial;
 
 rt_err_t bc260y_rxcb(rt_device_t dev, rt_size_t size);
 rt_err_t bc260y_init();
-
-
+rt_err_t bc260y_uart_init();
+rt_err_t bc260y_get_time();
+rt_err_t bc260y_get_ip();
+rt_err_t bc260y_mqtt_open();
 #endif //RTTHREAD_BC260Y_H

@@ -10,6 +10,10 @@
 struct rt_semaphore sem_rx;
 
 struct time bc260y_time;
+char  bc260y_ip[16];
+
+/* at device response */
+at_response_t resp = RT_NULL;
 
 
 
@@ -88,23 +92,19 @@ int bc26_device_register(){
 //INIT_APP_EXPORT(bc26_device_register);
 
 
-int bc260y_at_init(){
-    bc260y_uart_init();
-    /* bc260 at client init */
-    at_client_init(BC260Y_UART,256,512);
-
-    at_response_t resp = RT_NULL;
+rt_err_t bc260y_get_time(){
     resp = at_create_resp(64, 0, 5000);
 
     at_exec_cmd(resp, "AT+CCLK?");
     at_resp_parse_line_args_by_kw(resp, "+CCLK:", "+CCLK: \"%d/%d/%d,%d:%d:%d+%d",
-                                  &bc260y_time.year,
-                                  &bc260y_time.month,
-                                  &bc260y_time.day,
-                                  &bc260y_time.hour,
-                                  &bc260y_time.min,
-                                  &bc260y_time.sec,
-                                  &bc260y_time.z);
+                                                                                  &bc260y_time.year,
+                                                                                  &bc260y_time.month,
+                                                                                  &bc260y_time.day,
+                                                                                  &bc260y_time.hour,
+                                                                                  &bc260y_time.min,
+                                                                                  &bc260y_time.sec,
+                                                                                  &bc260y_time.z);
+
 
     rt_kprintf("%d/%.2d/%.2d,%.2d:%.2d:%.2d\n", bc260y_time.year,
                bc260y_time.month,
@@ -113,6 +113,52 @@ int bc260y_at_init(){
                bc260y_time.min,
                bc260y_time.sec);
     at_delete_resp(resp);
+    return RT_EOK;
+}
+
+rt_err_t bc260y_get_ip(){
+    resp = at_create_resp(64, 0, 5000);
+
+    at_exec_cmd(resp, "AT+CGPADDR=0");
+    at_resp_parse_line_args_by_kw(resp, "+CGPADDR:", "+CGPADDR: 0,\"%[^,\"]", bc260y_ip);
+
+
+    rt_kprintf("IP:%s\n", bc260y_ip);
+    at_delete_resp(resp);
+    return RT_EOK;
+}
+
+rt_err_t bc260y_mqtt_open(){
+    int v1=-1,v2=-1;
+    /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
+    resp = at_create_resp(128, 4, 15000);
+
+    at_exec_cmd(resp, "AT+QMTOPEN=0,\"DN2HGX3J4C.iotcloud.tencentdevices.com\",1883");
+
+    at_resp_parse_line_args_by_kw(resp, "+QMTOPEN:", "+QMTOPEN: %d,%d", &v1,&v2);
+
+    rt_kprintf("v1:%d   v2:%d\n", v1,v2);
+    at_delete_resp(resp);
+    if((v1&&v2)!=0){
+        LOG_E("bc260y_mqtt_open failed...\n");
+        return -RT_ERROR;
+    }
+    return RT_EOK;
+}
+
+//printf("AT+QMTCONN=0,\"device00\",\"DN2HGX3J4Cdevice00;12010126;28cae;1720627200\",\"225c7c43b439d5365823ff0862becb2ecf84a0fcd648951b47ff0fe488f2af40;hmacsha256\"\r\n");
+//AT+QMTPUB=0,1,1,0,"$thing/up/property/DN2HGX3J4C/device00"
+
+
+int bc260y_at_init(){
+    bc260y_uart_init();
+    /* bc260 at client init */
+    at_client_init(BC260Y_UART,256,512);
+
+    bc260y_get_time();
+    bc260y_get_ip();
+    rt_thread_mdelay(1000);
+    bc260y_mqtt_open();
     return 0;
 }
 INIT_APP_EXPORT(bc260y_at_init);
