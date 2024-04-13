@@ -4,6 +4,7 @@
 /* M1820 温度传感器 */
 #include "owmy.h"
 #include "M601.h"
+extern struct rt_mailbox mb;
 
 void entry_m1820(){
     /* M1820 初始化 */
@@ -12,10 +13,11 @@ void entry_m1820(){
 
     while (1){
         float temp;
-        M1820_GetTemp(&temp);
-        int a = (temp+0.005)*100;
-        rt_kprintf("%d.%d",a/100,(a%100));
-        rt_thread_mdelay(1000);
+        for(int i=0;i<10;i++){
+            M1820_GetTemp(&temp);
+        }
+        rt_mb_send(&mb, (rt_uint32_t)&temp);
+        rt_thread_mdelay(4*60*1000);
     }
 }
 
@@ -30,6 +32,7 @@ int reg_m1820(){
 /* 如果获得线程控制块，启动这个线程 */
     if (tid1 != RT_NULL){
         rt_thread_startup(tid1);
+        rt_kprintf("M1820 init successful.\n");
         return RT_EOK;
     }
     return -RT_ERROR;

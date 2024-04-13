@@ -6,7 +6,9 @@
 #define RTTHREAD_BC260Y_H
 
 #include "rtdevice.h"
+#include "board.h"
 
+#define BC260Y_RESET_PIN GET_PIN(B,7)
 #define BC260Y_UART "uart2"
 #define BC260Y_BAUD BAUD_RATE_9600
 #define testdata  "bc260 baud9600 test\n"
@@ -39,5 +41,7 @@ rt_err_t bc260y_init();
 rt_err_t bc260y_uart_init();
 rt_err_t bc260y_get_time();
 rt_err_t bc260y_get_ip();
+rt_err_t bc260y_keepalive_forever();
+rt_err_t bc260y_mqtt_disconnect();
 rt_err_t bc260y_mqtt_open();
 #endif //RTTHREAD_BC260Y_H

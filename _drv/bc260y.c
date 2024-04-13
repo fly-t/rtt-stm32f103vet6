@@ -132,10 +132,21 @@ rt_err_t bc260y_get_ip(){
 rt_err_t bc260y_keepalive_forever(){
     resp = at_create_resp(64, 0, 1000);
 
-    at_exec_cmd(resp, "AT+QMTCFG=\"keepalive\",0,0");
+    at_exec_cmd(resp, "AT+QMTCFG=\"keepalive\",0,3600");
+    rt_kprintf("bc260y_keepalive_forever\n");
     at_delete_resp(resp);
     return RT_EOK;
 }
+
+//断开 MQTT 服务器与客户端的连接
+rt_err_t bc260y_mqtt_disconnect(){
+    resp = at_create_resp(64, 0, 1000);
+    at_exec_cmd(resp, "AT+QMTDISC=0");
+    rt_kprintf("bc260y_mqtt_disconnect\n");
+    at_delete_resp(resp);
+    return RT_EOK;
+}
+
 rt_err_t bc260y_mqtt_open(){
     int v1=-1,v2=-1;
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
@@ -236,11 +247,11 @@ void entry_bc260y_mqtt(){
     bc260y_rest();
 
     rt_thread_mdelay(10000);
-    bc260y_keepalive_forever();
+
     bc260y_get_time();
     bc260y_get_ip();
-    bc260y_mqtt_open();
-    bc260y_mqtt_connect();
+    bc260y_keepalive_forever();
+
 
     while (1){
         float *temperature;
@@ -249,9 +260,12 @@ void entry_bc260y_mqtt(){
             int a = (*temperature+0.005)*100;
             rt_kprintf("rec->%d.%d \n",a/100,(a%100));
         }
+        bc260y_mqtt_open();
+        bc260y_mqtt_connect();
         bc260y_mqtt_topic_pub();
         bc260y_mqtt_set_pub_data(*temperature,RT_NULL,RT_NULL,RT_NULL,1681448942);
         rt_thread_mdelay(1000);
+        bc260y_mqtt_disconnect();
     }
 }
 int bc260mqttregister(){
