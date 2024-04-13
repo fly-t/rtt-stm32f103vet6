@@ -200,7 +200,7 @@ int bc260y_at_init(){
 
     return 0;
 }
-INIT_APP_EXPORT(bc260y_at_init);
+//INIT_APP_EXPORT(bc260y_at_init);
 float i=1.5f;
 void entry_bc260y_mqtt(){
     bc260y_rest();
@@ -220,7 +220,6 @@ void entry_bc260y_mqtt(){
 }
 int bc260mqttregister(){
     static rt_thread_t tid2 = RT_NULL;
-
     tid2 = rt_thread_create("mqtt",
                             entry_bc260y_mqtt, RT_NULL,
                             2048,
@@ -234,4 +233,4 @@ int bc260mqttregister(){
     return -RT_ERROR;
 }
 
-INIT_APP_EXPORT(bc260mqttregister);
+//INIT_APP_EXPORT(bc260mqttregister);

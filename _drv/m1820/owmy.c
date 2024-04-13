@@ -33,20 +33,15 @@
 #define					tComplement_Presence		(tHigh_Reset-tSample_Presence)
 //---------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-void delay_10um(unsigned int n)
+/* 移植函数 */
+void delay_us(unsigned int n)
 {
+    /* 72Mhz min:9 max:12*/
     n*=10;
     while(n--);
 }
 
-
+/* 移植函数 */
 void M1820_Init(void)
 {
     rt_pin_mode(DQ_PIN, PIN_MODE_OUTPUT_OD);

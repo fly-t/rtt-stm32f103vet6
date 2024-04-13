@@ -7,12 +7,10 @@
 #include "rtdevice.h"
 #include "board.h"
 
-//延时10*n微秒
-void delay_10um(unsigned int n);
+/* 移植需要调整这里的延时 */
+void delay_us(unsigned int n);
 
-/*********�û�����������us����ʱ************/
-
-#define ow_Delay_us(x)			delay_10um(x)
+#define ow_Delay_us(x)			delay_us(x)
 #define ow_Delay_ms(x)			ow_Delay_us(1000*x)
 
 /* Definition of DQ pin for one-wire communication*/
