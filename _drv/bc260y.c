@@ -129,7 +129,13 @@ rt_err_t bc260y_get_ip(){
     at_delete_resp(resp);
     return RT_EOK;
 }
+rt_err_t bc260y_keepalive_forever(){
+    resp = at_create_resp(64, 0, 1000);
 
+    at_exec_cmd(resp, "AT+QMTCFG=\"keepalive\",0,0");
+    at_delete_resp(resp);
+    return RT_EOK;
+}
 rt_err_t bc260y_mqtt_open(){
     int v1=-1,v2=-1;
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
@@ -146,9 +152,11 @@ rt_err_t bc260y_mqtt_open(){
     }
     return RT_EOK;
 }
+
 rt_err_t bc260y_mqtt_uart_send(char* data){
     return rt_device_write(rt_device_find(BC260Y_UART),0,data, rt_strlen(data));
 }
+
 rt_err_t bc260y_mqtt_connect(){
     int v1=-1,v2=-1,v3=-1;
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
@@ -167,10 +175,16 @@ rt_err_t bc260y_mqtt_connect(){
     return RT_EOK;
 }
 
+
 rt_err_t bc260y_rest(){
-    resp = at_create_resp(64, 0, 200);
-    at_exec_cmd(resp, "AT+QRST=1");
-    at_delete_resp(resp);
+    rt_pin_mode(BC260Y_RESET_PIN,PIN_MODE_OUTPUT_OD);
+    rt_pin_write(BC260Y_RESET_PIN,PIN_LOW);
+    rt_thread_mdelay(100);
+    rt_pin_write(BC260Y_RESET_PIN,PIN_HIGH);
+    rt_kprintf("rest bc260y\n");
+//    resp = at_create_resp(64, 0, 200);
+//    at_exec_cmd(resp, "AT+QRST=1");
+//    at_delete_resp(resp);
     return RT_EOK;
 }
 
@@ -184,7 +198,7 @@ rt_err_t bc260y_mqtt_topic_pub(){
 rt_err_t bc260y_mqtt_set_pub_data(float temp, float longitude,float latitude,int signal,uint32_t utc){
     char str1[256];
 
-    sprintf(str1, "{\"method\":\"report\",\"clientToken\":\"bc260y\",\"timestamp\":%d,\"params\":{\"lac\":0,\"cid\":0,\"mnc\":0,\"mcc\":0,\"networkType\":1,\"y\":0,\"z\":0,\"x\":0,\"voltage\":3300,\"rsrq\":10,\"temp\":%f,\"level\":0}""}",utc, temp);
+    sprintf(str1, "{\"method\":\"report\",\"clientToken\":\"bc260y\",\"timestamp\":%d,\"params\":{\"lac\":0,\"cid\":0,\"mnc\":0,\"mcc\":0,\"networkType\":1,\"y\":0,\"z\":0,\"x\":0,\"voltage\":3300,\"rsrq\":10,\"temp\":%.2f,\"level\":0}""}",utc, temp);
 
     bc260y_mqtt_uart_send(str1);
     bc260y_mqtt_uart_send("\x1a");
@@ -192,30 +206,52 @@ rt_err_t bc260y_mqtt_set_pub_data(float temp, float longitude,float latitude,int
     return RT_EOK;
 }
 
+/* 邮箱控制块: 接收其他传感器线程传递过来的数据 */
+struct rt_mailbox mb;
+/* 用于放邮件的内存池 */
+static char mb_pool[128];
+int  mailbox_init(){
+        rt_mb_init(&mb,
+                "mbt",                      /* 名称是 mbt */
+                &mb_pool[0],                /* 邮箱用到的内存池是 mb_pool */
+                sizeof(mb_pool) / 4,        /* 邮箱中的邮件数目，因为一封邮件占 4 字节 */
+                RT_IPC_FLAG_FIFO);          /* 采用 FIFO 方式进行线程等待 */
+    return 0;
+}
 
 int bc260y_at_init(){
+    mailbox_init();
     bc260y_uart_init();
     /* bc260 at client init */
     at_client_init(BC260Y_UART,256,512);
 
     return 0;
 }
-//INIT_APP_EXPORT(bc260y_at_init);
-float i=1.5f;
+INIT_APP_EXPORT(bc260y_at_init);
+
+
+
 void entry_bc260y_mqtt(){
+
     bc260y_rest();
+
     rt_thread_mdelay(10000);
+    bc260y_keepalive_forever();
     bc260y_get_time();
     bc260y_get_ip();
     bc260y_mqtt_open();
     bc260y_mqtt_connect();
 
     while (1){
+        float *temperature;
 
+        if (rt_mb_recv(&mb, (rt_uint32_t *)&temperature, RT_WAITING_FOREVER) == RT_EOK){
+            int a = (*temperature+0.005)*100;
+            rt_kprintf("rec->%d.%d \n",a/100,(a%100));
+        }
         bc260y_mqtt_topic_pub();
-        bc260y_mqtt_set_pub_data(i,RT_NULL,RT_NULL,RT_NULL,1681448942);
-        rt_thread_mdelay(10*60000);
-        i+=1;
+        bc260y_mqtt_set_pub_data(*temperature,RT_NULL,RT_NULL,RT_NULL,1681448942);
+        rt_thread_mdelay(1000);
     }
 }
 int bc260mqttregister(){
@@ -233,4 +269,4 @@ int bc260mqttregister(){
     return -RT_ERROR;
 }
 
-//INIT_APP_EXPORT(bc260mqttregister);
+INIT_APP_EXPORT(bc260mqttregister);
