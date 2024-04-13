@@ -1,7 +1,7 @@
 //
 // Created by dd21 on 2024/4/10.
 //
-
+#include "stdio.h"
 #include "bc260y.h"
 #include "drv_log.h"
 #include "at.h"
@@ -10,6 +10,8 @@
 struct rt_semaphore sem_rx;
 
 struct time bc260y_time;
+/* 发送到服务器的数据 */
+struct mqtt_data mdata;
 char  bc260y_ip[16];
 
 /* at device response */
@@ -137,7 +139,6 @@ rt_err_t bc260y_mqtt_open(){
 
     at_resp_parse_line_args_by_kw(resp, "+QMTOPEN:", "+QMTOPEN: %d,%d", &v1,&v2);
 
-    rt_kprintf("open:v1:%d   v2:%d\n", v1,v2);
     at_delete_resp(resp);
     if((v1&&v2)!=0){
         LOG_E("bc260y_mqtt_open failed...\n");
@@ -174,19 +175,22 @@ rt_err_t bc260y_rest(){
 }
 
 rt_err_t bc260y_mqtt_topic_pub(){
-
     bc260y_mqtt_uart_send("AT+QMTPUB=0,1,1,0,\"$thing/up/property/DN2HGX3J4C/device00\"\r\n");
     rt_thread_mdelay(50);
 
-    char* send_data = "{\"method\":\"report\",\"clientToken\":\"bc260y\",\"timestamp\":1681448942,\"params\":{\"lac\":0,\"cid\":0,\"mnc\":0,\"mcc\":0,\"networkType\":1,\"y\":0,\"z\":0,\"x\":0,\"voltage\":3300,\"rsrq\":10,\"temp\":45,\"level\":0}""}\x1a";
-    bc260y_mqtt_uart_send(send_data);
-
-    rt_kprintf("sedn over\n");
     return RT_EOK;
 }
 
-//printf("AT+QMTCONN=0,\"device00\",\"DN2HGX3J4Cdevice00;12010126;28cae;1720627200\",\"225c7c43b439d5365823ff0862becb2ecf84a0fcd648951b47ff0fe488f2af40;hmacsha256\"\r\n");
-//AT+QMTPUB=0,1,1,0,"$thing/up/property/DN2HGX3J4C/device00"
+rt_err_t bc260y_mqtt_set_pub_data(float temp, float longitude,float latitude,int signal,uint32_t utc){
+    char str1[256];
+
+    sprintf(str1, "{\"method\":\"report\",\"clientToken\":\"bc260y\",\"timestamp\":%d,\"params\":{\"lac\":0,\"cid\":0,\"mnc\":0,\"mcc\":0,\"networkType\":1,\"y\":0,\"z\":0,\"x\":0,\"voltage\":3300,\"rsrq\":10,\"temp\":%f,\"level\":0}""}",utc, temp);
+
+    bc260y_mqtt_uart_send(str1);
+    bc260y_mqtt_uart_send("\x1a");
+
+    return RT_EOK;
+}
 
 
 int bc260y_at_init(){
@@ -197,7 +201,7 @@ int bc260y_at_init(){
     return 0;
 }
 INIT_APP_EXPORT(bc260y_at_init);
-
+float i=1.5f;
 void entry_bc260y_mqtt(){
     bc260y_rest();
     rt_thread_mdelay(10000);
@@ -205,9 +209,13 @@ void entry_bc260y_mqtt(){
     bc260y_get_ip();
     bc260y_mqtt_open();
     bc260y_mqtt_connect();
-    bc260y_mqtt_topic_pub();
+
     while (1){
 
+        bc260y_mqtt_topic_pub();
+        bc260y_mqtt_set_pub_data(i,RT_NULL,RT_NULL,RT_NULL,1681448942);
+        rt_thread_mdelay(10*60000);
+        i+=1;
     }
 }
 int bc260mqttregister(){
@@ -215,7 +223,7 @@ int bc260mqttregister(){
 
     tid2 = rt_thread_create("mqtt",
                             entry_bc260y_mqtt, RT_NULL,
-                            1024,
+                            2048,
                             25, 10);
 
 /* 如果获得线程控制块，启动这个线程 */

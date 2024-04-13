@@ -21,6 +21,14 @@ struct time{
     uint16_t z;
 };
 
+struct mqtt_data{
+    float temp;         // 温度
+    float longitude;    // 经度
+    float latitude;     // 纬度
+    int signal;         // 信号强度
+    uint32_t utc;       // utc时间
+};
+
 /* 串口设备句柄 */
 static rt_device_t serial;
 
