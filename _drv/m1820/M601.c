@@ -13,8 +13,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "owmy.h"
+#include "time.h"
 #include "M601.h"
+#include <math.h>
 #include "MY_stdtype.h"
+#include <stdbool.h>
 
 /**
   * @brief  把16位二进制补码表示的温度输出转换为以摄氏度为单位的温度读数
@@ -23,7 +26,7 @@
 */
 float M601_OutputtoTemp(int16_t out)
 {
-	return ((float)out/256.0 + 40.0);	
+    return ((float)out/256.0 + 40.0);
 }
 
 /**
@@ -33,7 +36,7 @@ float M601_OutputtoTemp(int16_t out)
 */
 int16_t M601_TemptoOutput(float Temp)
 {
-	return (int16_t)((Temp-40.0)*256.0);	
+    return (int16_t)((Temp-40.0)*256.0);
 }
 
 /**
@@ -43,7 +46,7 @@ int16_t M601_TemptoOutput(float Temp)
   * @retval 校验和（CRC）
 */
 #define POLYNOMIAL 	0x131 //100110001
-uint8_t MY_OW_CRC8(uint8_t *serial, uint8_t length) 
+uint8_t MY_OW_CRC8(uint8_t *serial, uint8_t length)
 {
     uint8_t result = 0x00;
     uint8_t pDataBuf;
@@ -63,40 +66,40 @@ uint8_t MY_OW_CRC8(uint8_t *serial, uint8_t length)
             pDataBuf >>= 1;
         }
     }
-		
+
     return result;
 }
 
-BOOL OW_ReadRomCode_SkipRom(uint8_t *romcode)  
+BOOL OW_ReadRomCode_SkipRom(uint8_t *romcode)
 {
-  uint8_t i;
+    uint8_t i;
 
-	if(OW_ResetPresence() == FALSE)
-		return FALSE;
-	
-	OW_WriteByte(READ_ROM); 
-	
-	for(i=0; i < sizeof(M601_ROMCODE); i++) 
-     *romcode++ = OW_ReadByte(); 
-	
-	return TRUE;
+    if(OW_ResetPresence() == FALSE)
+        return FALSE;
+
+    OW_WriteByte(READ_ROM);
+
+    for(i=0; i < sizeof(M601_ROMCODE); i++)
+        *romcode++ = OW_ReadByte();
+
+    return TRUE;
 }
 
 BOOL M601_nReadScratchpad_SkipRom(uint8_t *scr, uint8_t size)
 {
     int16_t i;
 
-	/*size < sizeof(M601_SCRATCHPAD_READ)*/
-    if(OW_ResetPresence() == FALSE)						
-			return FALSE;
-		
+    /*size < sizeof(M601_SCRATCHPAD_READ)*/
+    if(OW_ResetPresence() == FALSE)
+        return FALSE;
+
     OW_WriteByte(SKIP_ROM);
     OW_WriteByte(READ_SCRATCHPAD);
-		
-		for(i=0; i<size; i++)
+
+    for(i=0; i<size; i++)
     {
-			*scr++ = OW_ReadByte();
-		}
+        *scr++ = OW_ReadByte();
+    }
 
     return TRUE;
 }
@@ -110,17 +113,17 @@ BOOL M601_ReadScratchpad_SkipRom(uint8_t *scr)
 {
     int16_t i;
 
-	/*size < sizeof(M601_SCRATCHPAD_READ)*/
-    if(OW_ResetPresence() == FALSE)					
-			return FALSE;
-		
+    /*size < sizeof(M601_SCRATCHPAD_READ)*/
+    if(OW_ResetPresence() == FALSE)
+        return FALSE;
+
     OW_WriteByte(SKIP_ROM);
     OW_WriteByte(READ_SCRATCHPAD);
-		
-		for(i=0; i < sizeof(M601_SCRATCHPAD_READ); i++)
+
+    for(i=0; i < sizeof(M601_SCRATCHPAD_READ); i++)
     {
-			*scr++ = OW_ReadByte();
-		}
+        *scr++ = OW_ReadByte();
+    }
 
     return TRUE;
 }
@@ -133,16 +136,16 @@ BOOL M601_WriteScratchpad_SkipRom(uint8_t *scr)
 {
     int16_t i;
 
-    if(OW_ResetPresence() == FALSE)						
-			return FALSE;
-		
+    if(OW_ResetPresence() == FALSE)
+        return FALSE;
+
     OW_WriteByte(SKIP_ROM);
     OW_WriteByte(WRITE_SCRATCHPAD);
-		
-		for(i=0; i < sizeof(M601_SCRATCHPAD_WRITE); i++)
+
+    for(i=0; i < sizeof(M601_SCRATCHPAD_WRITE); i++)
     {
-			OW_WriteByte(*scr++);
-		}
+        OW_WriteByte(*scr++);
+    }
 
     return TRUE;
 }
@@ -153,14 +156,14 @@ BOOL M601_WriteScratchpad_SkipRom(uint8_t *scr)
   * @retval 单总线发送状态
 */
 BOOL ConvertTemp(void)
-{	 
-	if(OW_ResetPresence() == FALSE)					
-		return FALSE;
+{
+    if(OW_ResetPresence() == FALSE)
+        return FALSE;
 
-  OW_WriteByte(SKIP_ROM);
-  OW_WriteByte(CONVERT_T);
-		
-  return TRUE;
+    OW_WriteByte(SKIP_ROM);
+    OW_WriteByte(CONVERT_T);
+
+    return TRUE;
 }
 
 
@@ -171,26 +174,26 @@ BOOL ConvertTemp(void)
 */
 BOOL ReadTempWaiting(uint16_t *iTemp)
 {
-	uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
-	M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
+    uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
+    M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
 
-	/*读9个字节。前两个是温度转换结果，最后字节是前8个的校验和--CRC。*/	
-	if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
-	{		
-		return FALSE;  /*读寄存器失败*/
-	}
+    /*读9个字节。前两个是温度转换结果，最后字节是前8个的校验和--CRC。*/
+    if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
+    {
+        return FALSE;  /*读寄存器失败*/
+    }
 
-	/*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/	
+    /*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/
 
-  if(scrb[8] != MY_OW_CRC8(scrb, 8))
-  {	
-		return FALSE;  /*CRC验证未通过*/
-  }
+    if(scrb[8] != MY_OW_CRC8(scrb, 8))
+    {
+        return FALSE;  /*CRC验证未通过*/
+    }
 
-	/*将温度测量结果的两个字节合成为16位字。*/	
-	*iTemp=(uint16_t)scr->T_msb<<8 | scr->T_lsb; 
-	
-  return TRUE;		
+    /*将温度测量结果的两个字节合成为16位字。*/
+    *iTemp=(uint16_t)scr->T_msb<<8 | scr->T_lsb;
+
+    return TRUE;
 }
 
 /**
@@ -200,37 +203,37 @@ BOOL ReadTempWaiting(uint16_t *iTemp)
 */
 BOOL ReadTempPolling(uint16_t *iTemp)
 { int timeout = 0;
-		
-	/*读状态位时隙。如果转换还没结束，芯片以1响应读时隙。如果转换结束，芯片以0响应度时隙。
-	前两个字节是温度转换结果，最后字节是前8个的校验和--CRC。*/		
-	while (OW_ReadStatus() == BUSY )
-	{	
-		DELAY_Ms(1);	
-    timeout++; 
-		if(timeout > 50) 
-		{				
-			return FALSE;				/*超时错误*/
-		}
-	}
-	
-	uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
-	M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
-	
-	/*读9个字节。前两个是温度转换结果，最后字节是前8个的校验和--CRC。*/	
-	if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
-	{		
-		return FALSE;  /*I2C地址头应答为NACK*/
-	}
 
-	/*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/	
-  if(scrb[8] != MY_OW_CRC8(scrb, 8))
-  {	
-		return FALSE;  /*CRC验证未通过*/
-  }
-	/*将温度测量结果的两个字节合成为16位字。*/				
-	*iTemp=(uint16_t)scr->T_msb<<8 | scr->T_lsb;
-	
-  return TRUE;		
+    /*读状态位时隙。如果转换还没结束，芯片以1响应读时隙。如果转换结束，芯片以0响应度时隙。
+    前两个字节是温度转换结果，最后字节是前8个的校验和--CRC。*/
+    while (OW_ReadStatus() == BUSY )
+    {
+        ow_Delay_ms(1);
+        timeout++;
+        if(timeout > 50)
+        {
+            return FALSE;				/*超时错误*/
+        }
+    }
+
+    uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
+    M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
+
+    /*读9个字节。前两个是温度转换结果，最后字节是前8个的校验和--CRC。*/
+    if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
+    {
+        return FALSE;  /*I2C地址头应答为NACK*/
+    }
+
+    /*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/
+    if(scrb[8] != MY_OW_CRC8(scrb, 8))
+    {
+        return FALSE;  /*CRC验证未通过*/
+    }
+    /*将温度测量结果的两个字节合成为16位字。*/
+    *iTemp=(uint16_t)scr->T_msb<<8 | scr->T_lsb;
+
+    return TRUE;
 }
 
 /**
@@ -249,30 +252,30 @@ BOOL ReadTempPolling(uint16_t *iTemp)
   * @retval 无
 */
 BOOL M1820_SetConfig(uint8_t mps, uint8_t repeatability)
-{ 
-	uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
-	M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
+{
+    uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
+    M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
 
-	/*读9个字节。第7字节是系统配置寄存器，第8字节是系统状态寄存器。最后字节是前8个的校验和--CRC。*/	
-	if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
-	{	
-		return FALSE;  /*读暂存器组水平*/
-	}
+    /*读9个字节。第7字节是系统配置寄存器，第8字节是系统状态寄存器。最后字节是前8个的校验和--CRC。*/
+    if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
+    {
+        return FALSE;  /*读暂存器组水平*/
+    }
 
-	/*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/	
-  if(scrb[8] != MY_OW_CRC8(scrb, 8))
-  {			
-		return FALSE;  /*CRC验证未通过*/
-  }
-	
-	scr->Cfg &= ~CFG_Repeatbility_Mask;
-	scr->Cfg |= repeatability;
-	scr->Cfg &= ~CFG_MPS_Mask;
-	scr->Cfg |= mps;		
-	
-	M601_WriteScratchpad_SkipRom(scrb+4);
-	
-	return TRUE;
+    /*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/
+    if(scrb[8] != MY_OW_CRC8(scrb, 8))
+    {
+        return FALSE;  /*CRC验证未通过*/
+    }
+
+    scr->Cfg &= ~CFG_Repeatbility_Mask;
+    scr->Cfg |= repeatability;
+    scr->Cfg &= ~CFG_MPS_Mask;
+    scr->Cfg |= mps;
+
+    M601_WriteScratchpad_SkipRom(scrb+4);
+
+    return TRUE;
 }
 
 /**
@@ -282,26 +285,26 @@ BOOL M1820_SetConfig(uint8_t mps, uint8_t repeatability)
   * @retval 状态
 */
 BOOL ReadStatusConfig(uint8_t *status, uint8_t *cfg)
-{ 
-	uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
-	M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
+{
+    uint8_t scrb[sizeof(M601_SCRATCHPAD_READ)];
+    M601_SCRATCHPAD_READ *scr = (M601_SCRATCHPAD_READ *) scrb;
 
-	/*读9个字节。第7字节是系统配置寄存器，第8字节是系统状态寄存器。最后字节是前8个的校验和--CRC。*/		
-	if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
-	{
-		return FALSE;  /*CRC验证未通过*/
-	}
+    /*读9个字节。第7字节是系统配置寄存器，第8字节是系统状态寄存器。最后字节是前8个的校验和--CRC。*/
+    if(M601_ReadScratchpad_SkipRom(scrb) == FALSE)
+    {
+        return FALSE;  /*CRC验证未通过*/
+    }
 
-	/*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/	
-  if(scrb[8] != MY_OW_CRC8(scrb, 8))
-  {		
-		return FALSE;  /*CRC验证未通过*/
-  }	
-	
-	*status = scr->Status;
-	*cfg = scr->Cfg;	
-	
-	return TRUE;
+    /*计算接收的前8个字节的校验和，并与接收的第9个CRC字节比较。*/
+    if(scrb[8] != MY_OW_CRC8(scrb, 8))
+    {
+        return FALSE;  /*CRC验证未通过*/
+    }
+
+    *status = scr->Status;
+    *cfg = scr->Cfg;
+
+    return TRUE;
 }
 
 /**
@@ -311,29 +314,29 @@ BOOL ReadStatusConfig(uint8_t *status, uint8_t *cfg)
 */
 
 BOOL M1820_GetTemp(float *temp)
-{ 
-	uint16_t iTemp;
-	volatile float fTemp1;
-	if(ConvertTemp() == FALSE){return FALSE;} 
-	DELAY_Ms(12);
+{
+    uint16_t iTemp;
+    volatile float fTemp1;
+    if(ConvertTemp() == FALSE){return FALSE;}
+    ow_Delay_ms(12);
     /* 如果crc校验错误就使用上次的温度值
        没有错误的话直接使用当前的值
      */
-	if(ReadTempWaiting(&iTemp)==TRUE){
+    if(ReadTempWaiting(&iTemp)==TRUE){
         *temp=M601_OutputtoTemp((int16_t)iTemp);
     }
     else{
         return FALSE;
-    }    
-	
+    }
+
     return TRUE;
-	
+
 }
 
 void M1820_FloatT2uint16T(float f_temp, uint16_t point, uint16_t* u16_temp){
-   float temp =  f_temp * 10.0;
+    float temp =  f_temp * 10.0;
     *u16_temp = (uint16_t)temp;
-   return;
+    return;
 }
 
 /**********************************************************************************************/

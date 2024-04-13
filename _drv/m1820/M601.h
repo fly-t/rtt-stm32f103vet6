@@ -72,72 +72,72 @@
 /* M601/01 ow Commands-------------------------------------------------------*/
 typedef enum
 {
-	//ROM command
-  SKIP_ROM            	= 0xcc,
-  READ_ROM            	= 0x33,
-  MATCH_ROM           	= 0x55,
-	SEARCH_ROM           	= 0xf0, 
-	ALARM_SEARCH					= 0xec,
-	//Function command
-  CONVERT_T           	= 0x44,
-	READ_SCRATCHPAD     	= 0xbe,
-	WRITE_SCRATCHPAD     	= 0x4e,	
+    //ROM command
+    SKIP_ROM            	= 0xcc,
+    READ_ROM            	= 0x33,
+    MATCH_ROM           	= 0x55,
+    SEARCH_ROM           	= 0xf0,
+    ALARM_SEARCH					= 0xec,
+    //Function command
+    CONVERT_T           	= 0x44,
+    READ_SCRATCHPAD     	= 0xbe,
+    WRITE_SCRATCHPAD     	= 0x4e,
 } M601_OW_CMD;
 
 /******************  Scratchpad/SRAM  ******************/
 /*SRAM scratchpad*/
 typedef struct
 {
-	uint8_t T_lsb;					/*The LSB of �¶Ƚ��, RO*/
-	uint8_t T_msb;					/*The MSB of �¶Ƚ��, RO*/
-	uint8_t C1_lsb;					/*The LSB of ����ͨ��C1, RO*/
-	uint8_t C1_msb;					/*The MSB of ����ͨ��C1, Ro*/	
-	uint8_t Tha_set_lsb;		
-	uint8_t Tla_set_lsb;		
-	uint8_t Cfg;						/*ϵͳ���üĴ���, RW*/
-	uint8_t Status;					/*ϵͳ״̬�Ĵ���, RO*/
-	uint8_t crc_scr;				/*CRC for byte0-7, RO*/
+    uint8_t T_lsb;					/*The LSB of �¶Ƚ��, RO*/
+    uint8_t T_msb;					/*The MSB of �¶Ƚ��, RO*/
+    uint8_t C1_lsb;					/*The LSB of ����ͨ��C1, RO*/
+    uint8_t C1_msb;					/*The MSB of ����ͨ��C1, Ro*/
+    uint8_t Tha_set_lsb;
+    uint8_t Tla_set_lsb;
+    uint8_t Cfg;						/*ϵͳ���üĴ���, RW*/
+    uint8_t Status;					/*ϵͳ״̬�Ĵ���, RO*/
+    uint8_t crc_scr;				/*CRC for byte0-7, RO*/
 } M601_SCRATCHPAD_READ;
 
 typedef struct
-{	
-	int8_t Tha_set_lsb;				
-	int8_t Tla_set_lsb;			
-	uint8_t Cfg;						/*ϵͳ���üĴ���, RW*/
+{
+    int8_t Tha_set_lsb;
+    int8_t Tla_set_lsb;
+    uint8_t Cfg;						/*ϵͳ���üĴ���, RW*/
 } M601_SCRATCHPAD_WRITE;
 
 typedef struct
 {
-	uint8_t tha_clear;				
-	uint8_t tla_clear;					
-	uint8_t hha_set;					
-	uint8_t hla_set;					
-	uint8_t hha_clear;				
-	uint8_t hla_clear;					
-	uint8_t udf[5];							
-	uint8_t MPW_test;					
-	uint8_t crc_ext;						
+    uint8_t tha_clear;
+    uint8_t tla_clear;
+    uint8_t hha_set;
+    uint8_t hla_set;
+    uint8_t hha_clear;
+    uint8_t hla_clear;
+    uint8_t udf[5];
+    uint8_t MPW_test;
+    uint8_t crc_ext;
 } M601_SCRATCHPADEXT;
 
 typedef struct
 {
-	uint8_t Family;				/*Family byte, RO*/
-	uint8_t Id[6];				/*Unique ID, RO*/
-	uint8_t crc_rc;				/*Crc code for byte0-7, RO*/
+    uint8_t Family;				/*Family byte, RO*/
+    uint8_t Id[6];				/*Unique ID, RO*/
+    uint8_t crc_rc;				/*Crc code for byte0-7, RO*/
 } M601_ROMCODE;
 
 typedef struct
 {
-	uint8_t Res[3];
-	uint8_t Ch_Sel;					
-	uint8_t Cos;						
-	uint8_t Res1;				
-	uint8_t T_coeff[3];			
-	uint8_t Cfb;															
-	uint8_t Res2;
-	uint8_t Res3[2];
-	uint8_t dummy8;
-	uint8_t crc_para;				/*CRC for byte0-13, RO*/
+    uint8_t Res[3];
+    uint8_t Ch_Sel;
+    uint8_t Cos;
+    uint8_t Res1;
+    uint8_t T_coeff[3];
+    uint8_t Cfb;
+    uint8_t Res2;
+    uint8_t Res3[2];
+    uint8_t dummy8;
+    uint8_t crc_para;				/*CRC for byte0-13, RO*/
 } M601_SCRPARAMETERS;
 
 /*Exported functions*/

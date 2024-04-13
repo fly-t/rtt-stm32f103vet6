@@ -1,10 +1,7 @@
 #ifndef _MY_STDTYPE_H_
 #define _MY_STDTYPE_H_
 #include <stdint.h>
-//#if !defined(TRUE)
-//#define TRUE (1)
-//#endif 
-//#define FALSE (0)
+
 
 typedef uint32_t MY_BOOL;
 typedef float MY_FLT32;
@@ -17,10 +14,10 @@ typedef unsigned char UCHAR;
 typedef unsigned short USHORT;
 typedef  char CHAR;
 
-// armcc 
+// armcc
 #define _MY_INLINE_ __inline
 #define _MY_EXTERN_ extern
-// GNU Compiler 
+// GNU Compiler
 
 //#include <stdlib.h>
 //#include <assert.h>

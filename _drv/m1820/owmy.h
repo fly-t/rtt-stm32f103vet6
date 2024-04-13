@@ -3,31 +3,30 @@
 #define OWMY_H
 
 /* Includes ------------------------------------------------------------------*/
-//#include "HAL_device.h"
-//#include "hal_conf.h"
-//#include "types.h"
 #include "MY_stdtype.h"
-#include <rtdevice.h>
-#include <board.h>
+#include "rtdevice.h"
+#include "board.h"
+
+//延时10*n微秒
+void delay_10um(unsigned int n);
 
 /*********�û�����������us����ʱ************/
 
-#define ow_Delay_us			rt_thread_delay
-#define DELAY_Ms(x)			rt_thread_delay(1000*x)
+#define ow_Delay_us(x)			delay_10um(x)
+#define ow_Delay_ms(x)			ow_Delay_us(1000*x)
 
 /* Definition of DQ pin for one-wire communication*/
+#define DQ_PIN  GET_PIN(E,6)
 
 
-#define DQ_PIN GET_PIN(E,6)
 /* Macros for DQ manipulation*/
-#define ow_DQ_set()     rt_pin_write(DQ_PIN,PIN_HIGH)
-#define ow_DQ_reset()     rt_pin_write(DQ_PIN,PIN_LOW)
-#define ow_DQ_get()     rt_pin_read(DQ_PIN)
-
+#define ow_DQ_set() rt_pin_write(DQ_PIN,PIN_HIGH)
+#define ow_DQ_reset() rt_pin_write(DQ_PIN,PIN_LOW)
+#define ow_DQ_get() rt_pin_read(DQ_PIN)
 
 typedef enum {
-  READY       = 0,
-  BUSY    		= 1
+    READY       = 0,
+    BUSY    		= 1
 } OW_SLAVESTATUS;
 
 /* Exported_Functions----------------------------------------------------------*/
