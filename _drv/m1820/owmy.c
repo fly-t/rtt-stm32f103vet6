@@ -37,7 +37,7 @@
 void delay_us(unsigned int n)
 {
     /* 72Mhz min:9 max:12*/
-    n*=10;
+    n*=12;
     while(n--);
 }
 

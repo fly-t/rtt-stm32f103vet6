@@ -15,6 +15,9 @@ void entry_m1820(){
         float temp;
         for(int i=0;i<10;i++){
             M1820_GetTemp(&temp);
+//            int a = (temp+0.005)*100;
+//            rt_kprintf("rec->%d.%d \n",a/100,(a%100));
+            rt_thread_mdelay(100);
         }
         rt_mb_send(&mb, (rt_uint32_t)&temp);
         rt_thread_mdelay(4*60*1000);

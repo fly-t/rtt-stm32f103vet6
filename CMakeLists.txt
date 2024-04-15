@@ -46,6 +46,7 @@ INCLUDE_DIRECTORIES(
 	rt-thread/libcpu/arm/cortex-m3
 	libraries/STM32F1xx_HAL/CMSIS/Device/ST/STM32F1xx/Include
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Inc
+	_drv/m1820
 	rt-thread/components/libc/posix/io/epoll
 	rt-thread/components/libc/posix/io/eventfd
 	rt-thread/components/libc/posix/io/poll
@@ -68,15 +69,15 @@ ADD_DEFINITIONS(
 )
 
 SET(PROJECT_SOURCES
-	_drv/led.c
-	_drv/beep.c
-	_drv/decode.c
-	_drv/button.c
 	_drv/bc260y.c
+	_drv/button.c
+	_drv/beep.c
+	_drv/led.c
+	_drv/decode.c
 	applications/main.c
+	rt-thread/components/net/at/src/at_utils.c
 	rt-thread/components/net/at/src/at_cli.c
 	rt-thread/components/net/at/src/at_client.c
-	rt-thread/components/net/at/src/at_utils.c
 	packages/cJSON-v1.7.17/cJSON.c
 	packages/cJSON-v1.7.17/cJSON_Utils.c
 	rt-thread/components/libc/compilers/common/cctype.c
@@ -154,6 +155,9 @@ SET(PROJECT_SOURCES
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cec.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_usart.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c
+	_drv/m1820/reg_m1820z.c
+	_drv/m1820/M601.c
+	_drv/m1820/owmy.c
 	rt-thread/components/libc/posix/io/poll/poll.c
 	rt-thread/components/libc/posix/io/poll/select.c
 	rt-thread/components/net/netdev/src/netdev.c
