@@ -203,7 +203,7 @@ rt_err_t bc260y_mqtt_open(){
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
     resp = at_create_resp(64, 4, 15000);
 
-    at_exec_cmd(resp, "AT+QMTOPEN=0,\"iot-06z00ccpa6sulhl.mqtt.iothub.aliyuncs.com\",1883");
+    at_exec_cmd(resp, "AT+QMTOPEN=0,\"DN2HGX3J4C.iotcloud.tencentdevices.com\",1883");
 
     at_resp_parse_line_args_by_kw(resp, "+QMTOPEN:", "+QMTOPEN: %d,%d", &v1,&v2);
 
