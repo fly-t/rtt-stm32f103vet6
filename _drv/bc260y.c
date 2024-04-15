@@ -197,17 +197,24 @@ rt_err_t bc260y_mqtt_disconnect(){
     at_delete_resp(resp);
     return RT_EOK;
 }
-
+#define ProductKey 				"iccpF8rzFf1"
+#define DeviceName 				"bc260y"
+#define DeviceSecret  		"df10894cfc613c7e0fa89fb09b036c45"
+#define mqttHostUrl   		"iot-06z00ccpa6sulhl.mqtt.iothub.aliyuncs.com"
 rt_err_t bc260y_mqtt_open(){
     int v1=-1,v2=-1;
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
-    resp = at_create_resp(64, 4, 15000);
+    resp = at_create_resp(64, 0, 5000);
 
-    at_exec_cmd(resp, "AT+QMTOPEN=0,\"DN2HGX3J4C.iotcloud.tencentdevices.com\",1883");
-
+    at_exec_cmd(resp, "AT+QMTCFG=\"aliauth\",0,\"%s\",\"%s\",\"%s\"\r\n",ProductKey,DeviceName,DeviceSecret);
+    rt_thread_mdelay(1000);
+    at_delete_resp(resp);
+    resp = at_create_resp(64, 4, 5000);
+    at_exec_cmd(resp, "AT+QMTOPEN=0,\"%s\",1883\r\n",mqttHostUrl);
     at_resp_parse_line_args_by_kw(resp, "+QMTOPEN:", "+QMTOPEN: %d,%d", &v1,&v2);
 
     at_delete_resp(resp);
+
     if((v1&&v2)!=0){
         LOG_E("bc260y_mqtt_open failed...\n");
         return -RT_ERROR;
@@ -224,7 +231,7 @@ rt_err_t bc260y_mqtt_connect(){
     /* 这里网络延时比较高,会先返回OK, 如果写line=0, 会立即结束, 无法接收到后续数据 */
     resp = at_create_resp(256, 4, 15000);
 
-    at_exec_cmd(resp, "AT+QMTCONN=0,\"device00\",\"DN2HGX3J4Cdevice00;12010126;28cae;1720627200\",\"225c7c43b439d5365823ff0862becb2ecf84a0fcd648951b47ff0fe488f2af40;hmacsha256\"");
+    at_exec_cmd(resp, "AT+QMTCONN=0,\"%s\"\r\n",DeviceName);
 
     at_resp_parse_line_args_by_kw(resp, "+QMTCONN:", "+QMTCONN: %d,%d,%d", &v1,&v2,&v3);
 
@@ -253,7 +260,7 @@ rt_err_t bc260y_rest(){
 }
 
 rt_err_t bc260y_mqtt_topic_pub(){
-    bc260y_mqtt_uart_send("AT+QMTPUB=0,1,1,0,\"$thing/up/property/DN2HGX3J4C/device00\"\r\n");
+    bc260y_mqtt_uart_send("AT+QMTPUB=0,1,1,0,\"/sys/iccpF8rzFf1/bc260y/thing/event/property/post\"\r\n");
     rt_thread_mdelay(50);
 
     return RT_EOK;
@@ -262,7 +269,7 @@ rt_err_t bc260y_mqtt_topic_pub(){
 rt_err_t bc260y_mqtt_set_pub_data(float temp, float longitude,float latitude,int signal,uint32_t utc){
     char str1[256];
 
-    sprintf(str1, "{\"method\":\"report\",\"clientToken\":\"bc260y\",\"timestamp\":%d,\"params\":{\"lac\":0,\"cid\":0,\"mnc\":0,\"mcc\":0,\"networkType\":1,\"y\":0,\"z\":0,\"x\":0,\"voltage\":3300,\"rsrq\":10,\"temp\":%.2f,\"level\":0}""}",utc, temp);
+    sprintf(str1, "{\"id\":1713167692014,\"params\":{\"battery\":3377,\"temp\":%.2f,\"x\":35.46,\"y\":35.49,\"z\":0.26,\"rsrp\":34,\"GeoLocation\":{\"Longitude\":30.97,\"Latitude\":29.94},\"level\":14.95,\"t\":\"random(0,50)\"},\"version\":\"1.0\",\"method\":\"thing.event.property.post\"}", temp);
 
     bc260y_mqtt_uart_send(str1);
     bc260y_mqtt_uart_send("\x1a");
