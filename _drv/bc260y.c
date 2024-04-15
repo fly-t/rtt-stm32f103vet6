@@ -6,8 +6,10 @@
 #include "drv_log.h"
 #include "at.h"
 
-/* 接收信号量 */
+/* 串口中断接收信号量目前无用 */
 struct rt_semaphore sem_rx;
+/* bc260y 信号量流程控制 */
+struct rt_semaphore sem_bc260y;
 
 struct time bc260y_time;
 /* 发送到服务器的数据 */
@@ -17,8 +19,57 @@ char  bc260y_ip[16];
 /* at device response */
 at_response_t resp = RT_NULL;
 
+/* 邮箱控制块: 接收其他传感器线程传递过来的数据 */
+struct rt_mailbox mb;
+static char mb_pool[128];
 
 
+/* --------------------------------------------- mailbox of mqtt  ------------------------------------------------- */
+int  mailbox_init(){
+    rt_mb_init(&mb,
+               "mbt",                      /* 名称是 mbt */
+               &mb_pool[0],                /* 邮箱用到的内存池是 mb_pool */
+               sizeof(mb_pool) / 4,        /* 邮箱中的邮件数目，因为一封邮件占 4 字节 */
+               RT_IPC_FLAG_FIFO);          /* 采用 FIFO 方式进行线程等待 */
+    return 0;
+}
+
+/* --------------------------------------------- URC ------------------------------------------------- */
+static void urc_conn_func(struct at_client *client ,const char *data, rt_size_t size)
+{
+    /* WIFI 连接成功信息 */
+    rt_kprintf("AT Server device WIFI connect success!");
+}
+
+static void urc_recv_func(struct at_client *client ,const char *data, rt_size_t size)
+{
+    /* 接收到服务器发送数据 */
+    rt_kprintf("AT Client receive AT Server data!");
+}
+
+static void urc_func(struct at_client *client ,const char *data, rt_size_t size)
+{
+    /* 设备启动信息 */
+    rt_sem_release(&sem_bc260y);
+    rt_kprintf("AT Server device startup!%s",data);
+}
+
+/* data is between prefix and suffix */
+static struct at_urc urc_table[] = {
+        {"WIFI CONNECTED",   "\r\n",        urc_conn_func},
+        {"+RECV",            ":",           urc_recv_func},
+        {"+IP",              "\r\n",           urc_func},
+};
+
+int at_client_port_init(void)
+{
+    /* 添加多种 URC 数据至 URC 列表中，当接收到同时匹配 URC 前缀和后缀的数据，执行 URC 函数  */
+    at_set_urc_table(urc_table, sizeof(urc_table) / sizeof(urc_table[0]));
+    return RT_EOK;
+}
+
+
+/* --------------------------------------- uart call back not used --------------------------------------- */
 rt_err_t bc260y_rxcb(rt_device_t dev, rt_size_t size){
     rt_sem_release(&sem_rx);
     return RT_EOK;
@@ -92,7 +143,7 @@ int bc26_device_register(){
 }
 
 //INIT_APP_EXPORT(bc26_device_register);
-
+/* --------------------------------------------------- mqtt ----------------------------------------------------- */
 
 rt_err_t bc260y_get_time(){
     resp = at_create_resp(64, 0, 5000);
@@ -188,11 +239,13 @@ rt_err_t bc260y_mqtt_connect(){
 
 
 rt_err_t bc260y_rest(){
+    /* hard reset */
     rt_pin_mode(BC260Y_RESET_PIN,PIN_MODE_OUTPUT_OD);
     rt_pin_write(BC260Y_RESET_PIN,PIN_LOW);
     rt_thread_mdelay(100);
     rt_pin_write(BC260Y_RESET_PIN,PIN_HIGH);
-    rt_kprintf("rest bc260y\n");
+    rt_kprintf("hard rest bc260y\n");
+    /* soft reset */
 //    resp = at_create_resp(64, 0, 200);
 //    at_exec_cmd(resp, "AT+QRST=1");
 //    at_delete_resp(resp);
@@ -217,36 +270,26 @@ rt_err_t bc260y_mqtt_set_pub_data(float temp, float longitude,float latitude,int
     return RT_EOK;
 }
 
-/* 邮箱控制块: 接收其他传感器线程传递过来的数据 */
-struct rt_mailbox mb;
-/* 用于放邮件的内存池 */
-static char mb_pool[128];
-int  mailbox_init(){
-        rt_mb_init(&mb,
-                "mbt",                      /* 名称是 mbt */
-                &mb_pool[0],                /* 邮箱用到的内存池是 mb_pool */
-                sizeof(mb_pool) / 4,        /* 邮箱中的邮件数目，因为一封邮件占 4 字节 */
-                RT_IPC_FLAG_FIFO);          /* 采用 FIFO 方式进行线程等待 */
-    return 0;
-}
-
-int bc260y_at_init(){
+int bc260y_device_init(){
+    rt_sem_init(&sem_bc260y,"sem_bc260y",0,RT_IPC_FLAG_FIFO);
+    /* rec & send the data to Cloud server */
     mailbox_init();
+    /* config baud: 9600, port: uart2 */
     bc260y_uart_init();
     /* bc260 at client init */
     at_client_init(BC260Y_UART,256,512);
+    /* urc init for rec data from Cloud server && check some response */
+    at_client_port_init();
 
     return 0;
 }
-INIT_APP_EXPORT(bc260y_at_init);
-
-
+//INIT_APP_EXPORT(bc260y_device_init);
 
 void entry_bc260y_mqtt(){
-
+    bc260y_device_init();
     bc260y_rest();
-
-    rt_thread_mdelay(10000);
+    /* waiting urc +IP release */
+    rt_sem_take(&sem_bc260y,RT_WAITING_FOREVER);
 
     bc260y_get_time();
     bc260y_get_ip();
@@ -269,15 +312,15 @@ void entry_bc260y_mqtt(){
     }
 }
 int bc260mqttregister(){
-    static rt_thread_t tid2 = RT_NULL;
-    tid2 = rt_thread_create("mqtt",
+    static rt_thread_t mqtt_thread = RT_NULL;
+    mqtt_thread = rt_thread_create("mqtt",
                             entry_bc260y_mqtt, RT_NULL,
                             2048,
                             25, 10);
 
 /* 如果获得线程控制块，启动这个线程 */
-    if (tid2 != RT_NULL){
-        rt_thread_startup(tid2);
+    if (mqtt_thread != RT_NULL){
+        rt_thread_startup(mqtt_thread);
         return RT_EOK;
     }
     return -RT_ERROR;
