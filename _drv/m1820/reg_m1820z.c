@@ -20,7 +20,7 @@ void entry_m1820(){
             rt_thread_mdelay(100);
         }
         rt_mb_send(&mb, (rt_uint32_t)&temp);
-        rt_thread_mdelay(4*60*1000);
+        rt_thread_mdelay(1*60*1000);
     }
 }
 
