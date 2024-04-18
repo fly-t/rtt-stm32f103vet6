@@ -40,6 +40,7 @@ INCLUDE_DIRECTORIES(
 	rt-thread/components/dfs/dfs_v1/include
 	rt-thread/components/dfs/dfs_v1/filesystems/devfs
 	rt-thread/components/finsh
+	_drv/il9341
 	.
 	rt-thread/include
 	rt-thread/libcpu/arm/common
@@ -69,15 +70,15 @@ ADD_DEFINITIONS(
 )
 
 SET(PROJECT_SOURCES
-	_drv/bc260y.c
 	_drv/button.c
-	_drv/beep.c
 	_drv/led.c
+	_drv/bc260y.c
 	_drv/decode.c
+	_drv/beep.c
 	applications/main.c
 	rt-thread/components/net/at/src/at_utils.c
-	rt-thread/components/net/at/src/at_cli.c
 	rt-thread/components/net/at/src/at_client.c
+	rt-thread/components/net/at/src/at_cli.c
 	packages/cJSON-v1.7.17/cJSON.c
 	packages/cJSON-v1.7.17/cJSON_Utils.c
 	rt-thread/components/libc/compilers/common/cctype.c
@@ -118,6 +119,10 @@ SET(PROJECT_SOURCES
 	rt-thread/components/finsh/msh_parse.c
 	rt-thread/components/finsh/cmd.c
 	rt-thread/components/finsh/msh_file.c
+	_drv/il9341/fonts.c
+	_drv/il9341/ili9341_touch.c
+	_drv/il9341/lcd_9341.c
+	_drv/il9341/ili9341.c
 	rt-thread/src/clock.c
 	rt-thread/src/components.c
 	rt-thread/src/idle.c
@@ -151,13 +156,15 @@ SET(PROJECT_SOURCES
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_crc.c
 	libraries/STM32F1xx_HAL/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c
+	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_sram.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c
+	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_fsmc.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cec.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_usart.c
 	libraries/STM32F1xx_HAL/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c
-	_drv/m1820/reg_m1820z.c
 	_drv/m1820/M601.c
 	_drv/m1820/owmy.c
+	_drv/m1820/reg_m1820z.c
 	rt-thread/components/libc/posix/io/poll/poll.c
 	rt-thread/components/libc/posix/io/poll/select.c
 	rt-thread/components/net/netdev/src/netdev.c

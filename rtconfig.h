@@ -260,7 +260,8 @@
 
 
 /* Display */
-
+/* using  fsmc for lcd */
+#define BSP_USING_EXT_SRAM
 
 /* Timing */
 
