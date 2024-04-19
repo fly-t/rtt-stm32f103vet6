@@ -201,7 +201,14 @@
 /* multimedia packages */
 
 /* LVGL: powerful and easy-to-use embedded GUI library */
-
+#define BSP_USING_EXT_SRAM
+#define PKG_USING_LVGL
+#define PKG_LVGL_THREAD_PRIO 20
+#define PKG_LVGL_THREAD_STACK_SIZE 4096
+#define PKG_LVGL_DISP_REFR_PERIOD 5
+#define PKG_LVGL_USING_V080311
+#define PKG_LVGL_VER_NUM 0x080311
+#define PKG_USING_GUI_GUIDER_DEMO
 
 /* u8g2: a monochrome graphic library */
 
@@ -260,8 +267,7 @@
 
 
 /* Display */
-/* using  fsmc for lcd */
-#define BSP_USING_EXT_SRAM
+
 
 /* Timing */
 

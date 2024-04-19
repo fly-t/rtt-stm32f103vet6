@@ -39,11 +39,11 @@ int LCD_init(){
 
 void lcd_il9341_entry(){
     LCD_init();
-    while(1){
-//        ILI9341_Test();
-        FPS_Test();
-        rt_thread_mdelay(1);
-    }
+//    while(1){
+////        ILI9341_Test();
+//        FPS_Test();
+//        rt_thread_mdelay(1);
+//    }
 }
 
 int lcd_reg(){
@@ -54,7 +54,7 @@ int lcd_reg(){
     return 0;
 }
 
-INIT_DEVICE_EXPORT(lcd_reg);
+//INIT_DEVICE_EXPORT(lcd_reg);
 
 
 /* FSMC initialization function */

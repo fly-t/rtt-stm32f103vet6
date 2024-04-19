@@ -18,7 +18,7 @@
 
 /* data reg */
 #define LCD_DATA_ADDR (uint32_t)(LCD_CMD_ADDR|(2<<PAx))      // 2^PAx<<1 -> (1<<PAx)<<1) ->(2<<PAx))
-
+int LCD_init();
 
 
 #endif //RTTHREAD_LCD_THREAD_H

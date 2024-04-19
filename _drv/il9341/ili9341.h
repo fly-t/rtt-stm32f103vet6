@@ -48,7 +48,7 @@
 #if ILI9341_SET_ROTATION == 0
     #define ILI9341_WIDTH  240
     #define ILI9341_HEIGHT 320
-    #define ILI9341_ROTATION (ILI9341_MADCTL_MY | ILI9341_MADCTL_BGR)
+    #define ILI9341_ROTATION (ILI9341_MADCTL_MX | ILI9341_MADCTL_BGR)
 
 
 // rotate right
@@ -85,7 +85,8 @@
 #define ILI9341_COLOR565(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3))
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
-
+void ILI9341_WriteCommand(uint16_t cmd);
+void ILI9341_WriteData(uint16_t data);
 /**
  * @brief Initialize the ili9341 controller
  * @param none

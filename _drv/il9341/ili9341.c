@@ -12,11 +12,11 @@ static void ILI9341_Reset() {
     rt_pin_write(LCD_PIN_REST,PIN_HIGH);
 }
 
-static void ILI9341_WriteCommand(uint16_t cmd) {
+void ILI9341_WriteCommand(uint16_t cmd) {
     ILI9341_WRITE_REG = cmd;
 }
 
-static void ILI9341_WriteData(uint16_t data) {
+void ILI9341_WriteData(uint16_t data) {
     ILI9341_WRITE_DATA = data;
 }
 
