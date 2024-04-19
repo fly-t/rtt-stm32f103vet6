@@ -2,8 +2,8 @@
 // Created by dd21 on 2024/4/17.
 //
 
-#ifndef RTTHREAD_LCD_9341_H
-#define RTTHREAD_LCD_9341_H
+#ifndef RTTHREAD_LCD_THREAD_H
+#define RTTHREAD_LCD_THREAD_H
 
 #include "board.h"
 
@@ -21,4 +21,4 @@
 
 
 
-#endif //RTTHREAD_LCD_9341_H
+#endif //RTTHREAD_LCD_THREAD_H

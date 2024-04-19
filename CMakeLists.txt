@@ -121,7 +121,7 @@ SET(PROJECT_SOURCES
 	rt-thread/components/finsh/msh_file.c
 	_drv/il9341/fonts.c
 	_drv/il9341/ili9341_touch.c
-	_drv/il9341/lcd_9341.c
+		_drv/il9341/lcd_thread.c
 	_drv/il9341/ili9341.c
 	rt-thread/src/clock.c
 	rt-thread/src/components.c
